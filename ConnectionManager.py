@@ -1,14 +1,36 @@
 from MessageManeger import MessageManager
+from concurrent.futures import ThreadPoolExecutor
+import socket
 
 PING_INTERVAL = 1800
 
 class ConnectionManager:
-    def __init__(self):
-        print('未実装')
+    def __init__(self, host, my_port):
+        print('Initializing ConnectionManeger')
+        self.host = host
+        self.port = my_port
+        self.core_node_set = set()
+        self.__add_peer((host, my_port))
+        self.mm = MessageManager()
+
 
     # 待ち受けを開始する際に呼び出される (ServerCore向け)
     def start(self):
-        print('未実装')
+        # メッセージ待機のために通信のための口を開く処理
+        def __wait_for_access(self):
+            self.socket = socket.socket(socket.AF_INTE, socket.SOCK_STREAM)
+            self.socket.bind((self.host, self.port))
+            self.socket.listen(0)
+            executor = ThreadPoolExecutor(max_workers=10)
+
+            while True:
+                print('Waiting for the connection...')
+                soc, addr = self.socket.accept()
+                print('Connected by .. ', addr)
+                data_sum = ''
+
+                params = (soc, addr, data_sum)
+                executor.submit(self.__handle_messages, params)
 
     # ユーザーが指定したきちのCoreノードへの接続　(ServerCore向け)
     def join_network(self):
@@ -28,12 +50,16 @@ class ConnectionManager:
         print('未実装')
     
     # 新たに接続されたCoreノードをリストに追加する。クラスの外からは利用しない想定
-    def __add_peer(self):
-        print('未実装')
+    def __add_peer(self, peer):
+        print('Adding peer :', peer)
+        self.core_node_set.add((peer))
     
     # 離脱したCoreノードをリストから削除する。クラスのそとからは利用しない想定
-    def __remove_peer(self):
-        print('未実装')
+    def __remove_peer(self, peer):
+        if peer in self.core_node_set:
+            print('Removing peer:', peer)
+            self.core_node_set.remove(peer)
+            print('Current Core list: ', self.core_node_set)
 
     # 接続されているCoreノードすべての接続状況確認を行う。クラスの外からは利用しない想定
     def __check_peers_connection(self):
