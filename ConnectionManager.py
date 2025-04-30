@@ -31,6 +31,21 @@ class ConnectionManager:
 
                 params = (soc, addr, data_sum)
                 executor.submit(self.__handle_messages, params)
+        # 他ノードから受け取ったメッセージを処理する
+        def __handle_message(self, params):
+            soc, addr, datasum = params
+            while True:
+                data = soc.recv(1024)
+                data_sum = data_sum + data.decode('utf-8')
+
+                if not data:
+                    break
+            if not data_sum:
+                return
+            result, reason, cmd, peer_port, payload = self.mm.parse(data_sum)
+            print(result, reason, cmd, peer_port, payload)
+            status = (result, reason)
+
 
     # ユーザーが指定したきちのCoreノードへの接続　(ServerCore向け)
     def join_network(self):
